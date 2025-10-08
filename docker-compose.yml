@@ -27,6 +27,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/bd_sysgespecole
       SPRING_DATASOURCE_USERNAME: bd_sysgespecole_user
       SPRING_DATASOURCE_PASSWORD: wlfMHSJyFKEjP3FjaMmtIvIPWxuHBYNm
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
     ports:
       - "8080:8080"
     command: ["sh", "-c", "java -jar app.jar"]
