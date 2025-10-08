@@ -7,7 +7,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Étape 2 : créer l’image exécutable
-FROM eclipse-temurin:17-jdk-jammy
+FROM eclipse-temurin:17-jdk
 WORKDIR /app
 COPY --from=builder /app/target/SYSGESPECOLE-0.0.1-SNAPSHOT.jar app.jar
 
@@ -16,3 +16,4 @@ EXPOSE 8080
 
 # Commande de démarrage
 ENTRYPOINT ["java", "-jar", "app.jar"]
+
