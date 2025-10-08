@@ -1,8 +1,7 @@
 version: "3.8"
-
 services:
   db:
-    image: postgres:17
+    image: postgres:15
     container_name: postgres_db
     environment:
       POSTGRES_USER: bd_sysgespecole_user
@@ -11,24 +10,24 @@ services:
     ports:
       - "5432:5432"
     restart: always
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U bd_sysgespecole_user"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   app:
     build: .
     container_name: spring_app
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/bd_sysgespecole
       SPRING_DATASOURCE_USERNAME: bd_sysgespecole_user
       SPRING_DATASOURCE_PASSWORD: wlfMHSJyFKEjP3FjaMmtIvIPWxuHBYNm
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_JPA_SHOW_SQL: "true"
     ports:
       - "8080:8080"
-    command: ["sh", "-c", "java -jar app.jar"]
+    command: >
+      sh -c "
+        until pg_isready -h db -U bd_sysgespecole_user; do
+          echo 'Waiting for PostgreSQL...';
+          sleep 2;
+        done &&
+        java -jar app.jar
+      "
+
