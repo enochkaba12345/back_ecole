@@ -20,14 +20,16 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/bd_sysgespecole
       SPRING_DATASOURCE_USERNAME: bd_sysgespecole_user
       SPRING_DATASOURCE_PASSWORD: wlfMHSJyFKEjP3FjaMmtIvIPWxuHBYNm
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
     ports:
       - "8080:8080"
     command: >
       sh -c "
-        apt-get update && apt-get install -y postgresql-client &&
         until pg_isready -h db -U bd_sysgespecole_user; do
-          echo 'Waiting for PostgreSQL...';
+          echo '⏳ Waiting for PostgreSQL...';
           sleep 2;
-        done &&
+        done;
+        echo '✅ PostgreSQL is ready, starting app...';
         java -jar app.jar
       "
