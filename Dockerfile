@@ -1,4 +1,3 @@
-
 # Étape 1 : builder l’application
 FROM maven:3.9.9-eclipse-temurin-17 AS builder
 WORKDIR /app
@@ -9,6 +8,11 @@ RUN mvn clean package -DskipTests
 # Étape 2 : créer l’image exécutable
 FROM eclipse-temurin:17-jdk
 WORKDIR /app
+
+# Installer le client PostgreSQL pour que la commande pg_isready fonctionne
+RUN apt-get update && apt-get install -y postgresql-client && rm -rf /var/lib/apt/lists/*
+
+# Copier le JAR généré
 COPY --from=builder /app/target/SYSGESPECOLE-0.0.1-SNAPSHOT.jar app.jar
 
 # Exposer le port de ton application
@@ -16,4 +20,3 @@ EXPOSE 8080
 
 # Commande de démarrage
 ENTRYPOINT ["java", "-jar", "app.jar"]
-
