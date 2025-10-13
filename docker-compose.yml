@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   db:
-    image: postgres:17
+    image: postgres:15
     container_name: postgres_db
     environment:
       POSTGRES_USER: bd_sysgespecole_user
@@ -12,15 +12,22 @@ services:
     restart: always
 
   app:
-  build: .
-  container_name: spring_app
-  depends_on:
-    - db
-  environment:
-    SPRING_DATASOURCE_URL: jdbc:postgresql://dpg-d3fr0vm3jp1c73f453ng-a.oregon-postgres.render.com:5432/bd_sysgespecole
-    SPRING_DATASOURCE_USERNAME: bd_sysgespecole_user
-    SPRING_DATASOURCE_PASSWORD: wlfMHSJyFKEjP3FjaMmtIvIPWxuHBYNm
-  ports:
-    - "8080:8080"
-  command: ["sh", "-c", "until pg_isready -h postgres_db -U bd_sysgespecole_user; do sleep 2; done && java -jar app.jar"]
-
+    build: .
+    container_name: spring_app
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/bd_sysgespecole
+      SPRING_DATASOURCE_USERNAME: bd_sysgespecole_user
+      SPRING_DATASOURCE_PASSWORD: wlfMHSJyFKEjP3FjaMmtIvIPWxuHBYNm
+    ports:
+      - "8080:8080"
+    command: >
+      sh -c "
+        apt-get update && apt-get install -y postgresql-client &&
+        until pg_isready -h db -U bd_sysgespecole_user; do
+          echo 'Waiting for PostgreSQL...';
+          sleep 2;
+        done &&
+        java -jar app.jar
+      "
