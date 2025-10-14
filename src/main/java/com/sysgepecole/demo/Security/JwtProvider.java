@@ -43,49 +43,48 @@ public class JwtProvider {
 	}
 	
 	public boolean validateJwtToken(String token) {
-		
-	     if (token == null || token.isEmpty()) {
-	         logger.error("JWT String argument cannot be null or empty.");
-	         return false;
-	     }
+     if (token == null || token.isEmpty()) {
+         logger.error("JWT String argument cannot be null or empty.");
+         return false;
+     }
 
-	     try {
-	         Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
-	         return true;
-	     } catch (SignatureException e) {
-	         logger.error("Invalid JWT signature: {}", e.getMessage());
-	     } catch (MalformedJwtException e) {
-	         logger.error("Invalid JWT token: {}", e.getMessage());
-	     } catch (ExpiredJwtException e) {
-	         logger.error("JWT token is expired: {}", e.getMessage());
-	     } catch (UnsupportedJwtException e) {
-	         logger.error("JWT token is unsupported: {}", e.getMessage());
-	     } catch (IllegalArgumentException e) {
-	         logger.error("JWT claims string is empty: {}", e.getMessage());
-	     } catch (JwtException e) {
-	         logger.error("JWT validation error: {}", e.getMessage());
-	     }
+     try {
+         Jwts.parserBuilder().setSigningKey(jwtSecret).build().parseSignedClaims(token);
+         return true;
+     } catch (SignatureException e) {
+         logger.error("Invalid JWT signature: {}", e.getMessage());
+     } catch (MalformedJwtException e) {
+         logger.error("Invalid JWT token: {}", e.getMessage());
+     } catch (ExpiredJwtException e) {
+         logger.error("JWT token is expired: {}", e.getMessage());
+     } catch (UnsupportedJwtException e) {
+         logger.error("JWT token is unsupported: {}", e.getMessage());
+     } catch (IllegalArgumentException e) {
+         logger.error("JWT claims string is empty: {}", e.getMessage());
+     } catch (JwtException e) {
+         logger.error("JWT validation error: {}", e.getMessage());
+     }
 
-	     return false;
-	 }
+     return false;
+ }
 
-	
-	
-	public String getUserNameFromJwtToken(String token) {
-		return Jwts.parser()
-				.setSigningKey(jwtSecret)
-				.parseClaimsJws(token)
-				.getBody().getSubject();
-	}
+public String getUserNameFromJwtToken(String token) {
+    return Jwts.parserBuilder()
+            .setSigningKey(jwtSecret)
+            .build()
+            .parseSignedClaims(token)
+            .getBody().getSubject();
+}
 
-	public boolean isTokenValid(String token) {
-		try {
-            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-	}
+public boolean isTokenValid(String token) {
+    try {
+        Jwts.parserBuilder().setSigningKey(jwtSecret).build().parseSignedClaims(token);
+        return true;
+    } catch (Exception e) {
+        return false;
+    }
+}
+
 	
 	
 	 public String generateToken(String username) {
