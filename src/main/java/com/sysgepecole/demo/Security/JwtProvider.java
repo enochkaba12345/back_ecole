@@ -1,3 +1,6 @@
+package com.sysgepecole.demo.Security;
+
+
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
