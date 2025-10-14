@@ -2,16 +2,16 @@ package com.sysgepecole.demo.Security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.stereotype.Component;
 
-import jakarta.annotation.PostConstruct;
+import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.util.Date;
 import java.util.stream.Collectors;
 
@@ -24,42 +24,48 @@ public class JwtProvider {
     private String jwtSecret;
 
     @Value("${jwt.expiration}")
-    private Long jwtExpiration;
+    private long jwtExpiration;
 
-    private Key key;
+    private final SecretKey key;
 
-    // ✅ Cette méthode est exécutée après l’injection des propriétés @Value
-    @PostConstruct
-    public void init() {
+    // Initialise la clé de signature au moment de la construction de la classe
+    public JwtProvider(@Value("${jwt.secret}") String jwtSecret) {
         this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
-    // ✅ Génération du token depuis un utilisateur authentifié
+    /**
+     * Génère un token JWT à partir de l'objet d'authentification.
+     * La syntaxe Jwts.builder().signWith(key) est utilisée.
+     */
     public String generateJwtToken(Authentication authentication) {
         UserSecurityModel userPrincipal = (UserSecurityModel) authentication.getPrincipal();
 
         return Jwts.builder()
                 .setSubject(userPrincipal.getUsername())
-                .claim("roles", userPrincipal.getAuthorities().stream()
-                        .map(GrantedAuthority::getAuthority)
-                        .collect(Collectors.toList()))
+                .claim("role", userPrincipal.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
-                .signWith(key, SignatureAlgorithm.HS512)
+                .signWith(key)
                 .compact();
     }
 
-    // ✅ Génération simple d’un token à partir d’un nom d’utilisateur
+    /**
+     * Génère un token JWT simple à partir du nom d'utilisateur.
+     * La syntaxe Jwts.builder().signWith(key) est utilisée.
+     */
     public String generateToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
-                .signWith(key, SignatureAlgorithm.HS512)
+                .signWith(key)
                 .compact();
     }
 
-    // ✅ Validation du token
+    /**
+     * Valide le token JWT en utilisant la nouvelle syntaxe Jwts.parserBuilder().
+     */
     public boolean validateJwtToken(String token) {
         if (token == null || token.isEmpty()) {
             logger.error("JWT String argument cannot be null or empty.");
@@ -67,19 +73,16 @@ public class JwtProvider {
         }
 
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseSignedClaims(token);
+            Jwts.parserBuilder().setSigningKey(key).build().parseSignedClaims(token);
             return true;
+        } catch (SignatureException e) {
+            logger.error("Invalid JWT signature: {}", e.getMessage());
+        } catch (MalformedJwtException e) {
+            logger.error("Invalid JWT token: {}", e.getMessage());
         } catch (ExpiredJwtException e) {
             logger.error("JWT token is expired: {}", e.getMessage());
         } catch (UnsupportedJwtException e) {
             logger.error("JWT token is unsupported: {}", e.getMessage());
-        } catch (MalformedJwtException e) {
-            logger.error("Invalid JWT token: {}", e.getMessage());
-        } catch (SignatureException e) {
-            logger.error("Invalid JWT signature: {}", e.getMessage());
         } catch (IllegalArgumentException e) {
             logger.error("JWT claims string is empty: {}", e.getMessage());
         } catch (JwtException e) {
@@ -89,17 +92,20 @@ public class JwtProvider {
         return false;
     }
 
-    // ✅ Extraction du username depuis le token
+    /**
+     * Récupère le nom d'utilisateur à partir du token JWT en utilisant la nouvelle syntaxe.
+     */
     public String getUserNameFromJwtToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
                 .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
+                .getBody().getSubject();
     }
 
-    // ✅ Vérification rapide
+    /**
+     * Une autre méthode pour valider le token, gérant simplement les exceptions.
+     */
     public boolean isTokenValid(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseSignedClaims(token);
