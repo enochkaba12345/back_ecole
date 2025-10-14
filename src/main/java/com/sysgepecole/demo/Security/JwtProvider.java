@@ -102,4 +102,24 @@ public class JwtProvider {
                 .getBody()
                 .getSubject();
     }
+
+    public boolean isTokenValid(String token) {
+		try {
+            Jwts.parser().setSigningKey(key).parseClaimsJws(token);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+	}
+	
+	
+	 public String generateToken(String username) {
+	        return Jwts.builder()
+	            .setSubject(username)
+	            .setIssuedAt(new Date())
+	            .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration)) 
+	            .signWith(key, SignatureAlgorithm.HS512)
+	            .compact();
+	    }
+	
 }
