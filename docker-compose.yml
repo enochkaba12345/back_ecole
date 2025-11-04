@@ -2,12 +2,12 @@ version: "3.8"
 
 services:
   db:
-    image: postgres:15
+    image: postgres:16
     container_name: postgres_db
     environment:
-      POSTGRES_DB: bd_sysgespecole
-      POSTGRES_USER: bd_sysgespecole_user
-      POSTGRES_PASSWORD: wlfMHSJyFKEjP3FjaMmtIvIPWxuHBYNm
+      POSTGRES_DB: bd_sysgespecole_1uue
+      POSTGRES_USER: bd_sysgespecole_1uue_user
+      POSTGRES_PASSWORD: uafsp8Zbn8SjaRtuy2HwJzR8xhq113ox
     ports:
       - "5432:5432"
     volumes:
@@ -20,14 +20,14 @@ services:
     depends_on:
       - db
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/bd_sysgespecole
-      SPRING_DATASOURCE_USERNAME: bd_sysgespecole_user
-      SPRING_DATASOURCE_PASSWORD: wlfMHSJyFKEjP3FjaMmtIvIPWxuHBYNm
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/bd_sysgespecole_1uue
+      SPRING_DATASOURCE_USERNAME: bd_sysgespecole_1uue_user
+      SPRING_DATASOURCE_PASSWORD: uafsp8Zbn8SjaRtuy2HwJzR8xhq113ox
     ports:
       - "8080:8080"
     command: >
       sh -c "
-        until pg_isready -h db -U bd_sysgespecole_user; do
+        until pg_isready -h db -U bd_sysgespecole_1uue; do
           echo 'Attente de PostgreSQL...';
           sleep 2;
         done &&
